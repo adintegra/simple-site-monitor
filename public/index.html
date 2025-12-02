@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Webpage Monitor</title>
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Webpage Monitor</h1>
+      <p>
+        Select a site to view its screenshots over time and
+        visual diffs.
+      </p>
+    </header>
+    <main>
+      <section class="controls">
+        <label for="site-select">Site:</label>
+        <select id="site-select">
+          <option value="">Loading…</option>
+        </select>
+        <a
+          id="site-link"
+          class="site-link"
+          href="#"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Open selected site in new tab"
+        >
+          ⇱
+        </a>
+      </section>
+
+      <section id="timeline"></section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+  </html>
