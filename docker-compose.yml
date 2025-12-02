@@ -3,8 +3,7 @@ version: "3.9"
 services:
   monitor:
     build: .
-    image: scrrrreeamtester:latest
-    container_name: scrrrreeamtester-monitor
+    container_name: simple-monitor
     command: ["node", "dist/monitor.js"]
     environment:
       - SCREENSHOT_CRON=*/10 * * * * # every 10 minutes
@@ -15,8 +14,7 @@ services:
 
   web:
     build: .
-    image: scrrrreeamtester:latest
-    container_name: scrrrreeamtester-web
+    container_name: simple-monitor-web
     command: ["node", "dist/server.js"]
     environment:
       - PORT=3000
