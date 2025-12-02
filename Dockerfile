@@ -1,4 +1,4 @@
-FROM node:22-alpine AS base
+FROM node:22-slim AS base
 
 WORKDIR /usr/src/app
 
@@ -7,6 +7,7 @@ COPY package*.json ./
 RUN npm install
 
 # Install Playwright dependencies and browsers
+# Using --with-deps installs system dependencies needed for Chromium
 RUN npx --yes playwright install --with-deps chromium
 
 COPY tsconfig.json ./
