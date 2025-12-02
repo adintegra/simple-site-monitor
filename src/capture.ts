@@ -20,7 +20,8 @@ export async function captureAllSites(): Promise<void> {
     return;
   }
 
-  const browser = await chromium.launch();
+  // const browser = await chromium.launch({ headless: true, ignoreDefaultArgs: ['--disable-features=TranslateUI,BlinkGenPropertyTrees,ImprovedCookieControls,SameSiteByDefaultCookies,LazyFrameLoading'] });
+  const browser = await chromium.launch({ headless: true });
   try {
     for (const site of sites) {
       try {
@@ -48,12 +49,12 @@ async function captureSite(
   const dir = siteDir(site.id);
   const filePath = path.join(dir, file);
 
-  const page = await browser.newPage({ viewport: VIEWPORT });
+  const page = await browser.newPage({ viewport: VIEWPORT, bypassCSP: true });
   try {
     // Load the page
     await page.goto(site.url, {
       waitUntil: "domcontentloaded",
-      timeout: 120000,
+      timeout: 60000,
     });
 
     // Scroll to the bottom
@@ -75,8 +76,23 @@ async function captureSite(
       });
     });
 
+    // Wait for all frames to load
+    if (page.frames().length > 0) {
+      // Log the page and frames URLs
+      console.log("Page URL:", page.url());
+      console.log("Frames:", page.frames().map((frame) => frame.url()));
+
+      try {
+        await Promise.all(
+          page.frames().map((frame) => frame.waitForLoadState("networkidle", { timeout: 60000 }))
+        );
+      } catch (error) {
+        console.error("Timeout waiting for frames to load:", error);
+      }
+    }
+
     // Wait 30 seconds
-    await page.waitForTimeout(45000);
+    await page.waitForTimeout(30000);
 
     // Take the screenshot
     await page.screenshot({
