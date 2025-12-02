@@ -2,12 +2,12 @@ FROM node:22-alpine AS base
 
 WORKDIR /usr/src/app
 
-# Install Playwright dependencies and browsers
-RUN npx --yes playwright install --with-deps chromium
-
 COPY package*.json ./
 
 RUN npm install
+
+# Install Playwright dependencies and browsers
+RUN npx --yes playwright install --with-deps chromium
 
 COPY tsconfig.json ./
 COPY src ./src
