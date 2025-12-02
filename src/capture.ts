@@ -55,7 +55,28 @@ async function captureSite(
       timeout: 60000,
     });
     // Extra delay to allow embedded content (e.g. iframes) to render
-    await page.waitForTimeout(30000);
+    await page.waitForTimeout(5000);
+
+    // Scroll through the page to trigger lazy-loaded content
+    await page.evaluate(async () => {
+      await new Promise<void>((resolve) => {
+        let totalHeight = 0;
+        const distance = 800;
+        const timer = setInterval(() => {
+          const scrollHeight =
+            document.documentElement.scrollHeight ||
+            document.body.scrollHeight;
+          window.scrollBy(0, distance);
+          totalHeight += distance;
+          if (totalHeight >= scrollHeight) {
+            clearInterval(timer);
+            resolve();
+          }
+        }, 300);
+      });
+    });
+    // Small pause after scrolling
+    await page.waitForTimeout(15000);
     await page.screenshot({
       path: filePath,
       fullPage: true,

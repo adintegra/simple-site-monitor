@@ -6,18 +6,18 @@ export const SITE_LIST_PATH = path.join(
   "sitelist.txt",
 );
 
-// Screenshot interval in cron format (default: every 15 minutes)
+// Screenshot interval in cron format (default: every 10 minutes)
 export const SCREENSHOT_CRON =
-  process.env.SCREENSHOT_CRON || "*/7 * * * *";
+  process.env.SCREENSHOT_CRON || "*/10 * * * *";
 
 // Retention period in days
 export const RETENTION_DAYS = Number(
-  process.env.RETENTION_DAYS || 7,
+  process.env.RETENTION_DAYS || 2,
 );
 
 export const VIEWPORT = {
   width: 1280,
-  height: 720,
+  height: 1440,
 };
 
 export const SERVER_PORT = Number(process.env.PORT || 3000);
