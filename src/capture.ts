@@ -50,12 +50,22 @@ async function captureSite(
 
   const page = await browser.newPage({ viewport: VIEWPORT });
   try {
+    // Navigate with longer timeout and wait for load state
     await page.goto(site.url, {
-      waitUntil: "networkidle",
-      timeout: 60000,
+      waitUntil: "domcontentloaded",
+      timeout: 120000,
     });
-    // Extra delay to allow embedded content (e.g. iframes) to render
-    await page.waitForTimeout(5000);
+
+    // Wait for network to be idle (but don't fail if it times out)
+    try {
+      await page.waitForLoadState("networkidle", { timeout: 30000 });
+    } catch {
+      // Some sites have continuous network activity - continue anyway
+      console.warn(`Network idle timeout for ${site.id}, continuing...`);
+    }
+
+    // Initial delay to allow page to settle
+    await page.waitForTimeout(10000);
 
     // Scroll through the page to trigger lazy-loaded content
     await page.evaluate(async () => {
@@ -75,8 +85,43 @@ async function captureSite(
         }, 300);
       });
     });
-    // Small pause after scrolling
-    await page.waitForTimeout(15000);
+
+    // Wait for network idle again after scrolling (triggers lazy-loaded content)
+    // Don't fail if it times out - some sites have continuous activity
+    try {
+      await page.waitForLoadState("networkidle", { timeout: 30000 });
+    } catch {
+      console.warn(`Post-scroll network idle timeout for ${site.id}, continuing...`);
+    }
+
+    // Wait for all iframes to load
+    try {
+      await page.waitForFunction(
+        () => {
+          const iframes = Array.from(document.querySelectorAll("iframe"));
+          if (iframes.length === 0) return true;
+
+          return iframes.every((iframe) => {
+            try {
+              // Check if iframe has loaded content
+              const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+              return iframeDoc && iframeDoc.readyState === "complete";
+            } catch {
+              // Cross-origin iframe - assume loaded if src is set
+              return iframe.src !== "";
+            }
+          });
+        },
+        { timeout: 30000 },
+      );
+    } catch {
+      // If iframe check times out, continue anyway
+      console.warn(`Iframe load check timed out for ${site.id}, proceeding...`);
+    }
+
+    // Final extended delay to ensure all iframe content is rendered
+    await page.waitForTimeout(20000);
+
     await page.screenshot({
       path: filePath,
       fullPage: true,
